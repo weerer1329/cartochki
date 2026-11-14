@@ -1,0 +1,1733 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Карточки</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#f6faf7; --accent:#4a7c59; --accent2:#6ba368; --text:#2d3a31;
+    --border:#d8e6dc; --card:#ffffff; --muted:#7a8a80; --danger:#c0544a;
+    --input-bg:#ffffff; --hover:#eef6f0;
+    --line-opacity:0.30; 
+    --circle-opacity:0.20;
+    --sidebar-width: 320px;
+  }
+  body.dark{
+    --bg:#1a1f1c; --accent:#4a7c59; --accent2:#6ba368; --text:#e8efe9;
+    --border:#2f3a32; --card:#242b26; --muted:#8a9a8e; --danger:#d4716a;
+    --input-bg:#1e2420; --hover:#2c3530;
+    --line-opacity:0.20;
+    --circle-opacity:0.14;
+  }
+  body.color-green   { --accent:#4a7c59; --accent2:#6ba368; --hover:#eef6f0; }
+  body.color-blue    { --accent:#3a6ea5; --accent2:#5b8fc7; --hover:#eaf2fa; }
+  body.color-red     { --accent:#a53a3a; --accent2:#c75b5b; --hover:#faeaea; }
+  body.color-purple  { --accent:#7a5aa5; --accent2:#9b7bc7; --hover:#f1eafa; }
+  body.color-yellow  { --accent:#a58a1a; --accent2:#c7ad3a; --hover:#faf7e0; }
+  body.color-pink    { --accent:#c74a7a; --accent2:#df6b96; --hover:#fceef3; }
+  body.color-lime    { --accent:#5fa53a; --accent2:#7ac75b; --hover:#f0fae9; }
+
+  body.dark.color-green  { --hover:#2c3530; }
+  body.dark.color-blue   { --hover:#1e2a38; }
+  body.dark.color-red    { --hover:#38211e; }
+  body.dark.color-purple { --hover:#2e2438; }
+  body.dark.color-yellow { --hover:#38331e; }
+  body.dark.color-pink   { --hover:#38202a; }
+  body.dark.color-lime   { --hover:#2b3820; }
+
+  *{box-sizing:border-box;}
+  body{
+    margin:0; font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
+    background-color:var(--bg); color:var(--text); line-height:1.5;
+    transition:background .2s,color .2s; position:relative; min-height:100vh; overflow-x:hidden;
+  }
+  
+  .bg-decor{position:fixed;inset:0;pointer-events:none;z-index:0;overflow:hidden;transition:opacity .2s;}
+  .bg-decor .lines{
+    position:absolute;inset:0;
+    background-image: repeating-linear-gradient(45deg, transparent 0 38px, var(--accent) 38px 41px),
+      repeating-linear-gradient(-45deg, transparent 0 38px, var(--accent) 38px 41px);
+    opacity:var(--line-opacity);
+  }
+  .bg-decor .circle{position:absolute;border-radius:50%;border:3px solid var(--accent);opacity:var(--circle-opacity);transition:border-color .2s;}
+  .bg-decor .c1{ width:420px; height:420px; top:-120px; right:-100px; border-width:4px; }
+  .bg-decor .c2{ width:260px; height:260px; bottom:-80px; left:-60px; border-width:3px; }
+  .bg-decor .c3{ width:180px; height:180px; top:38%; left:52%; border-width:3px; }
+  .bg-decor .c4{ width:90px; height:90px; top:12%; left:14%; border-width:3px; }
+  .bg-decor .c5{ width:140px; height:140px; bottom:18%; right:8%; border-width:3px; }
+  .bg-decor .c6{ width:60px; height:60px; top:68%; left:8%; border-width:3px; }
+  .bg-decor .c7{ width:320px; height:320px; top:52%; right:-120px; border-width:3px; }
+
+  .bg-decor .swirl { position: absolute; fill: none; stroke: var(--accent); stroke-width: 3; opacity: var(--circle-opacity); transition: stroke .2s; }
+  .bg-decor .swirl-1 { width: 300px; height: 300px; top: 10%; left: -50px; transform: rotate(15deg); }
+  .bg-decor .swirl-2 { width: 400px; height: 400px; bottom: -100px; right: -100px; transform: rotate(-25deg); }
+  .bg-decor .swirl-3 { width: 200px; height: 200px; top: 50%; left: 40%; transform: rotate(45deg); }
+
+  .wrap{position:relative;z-index:1;max-width:820px;margin:0 auto;padding:20px 16px 60px;}
+  header{display:flex;align-items:center;justify-content:space-between;padding:8px 0 20px;flex-wrap:wrap;gap:10px;}
+  h1{font-size:1.5rem;margin:0;font-weight:700;}
+  h1 span{color:var(--accent);}
+  .header-controls{display:flex;gap:8px;align-items:center;flex-wrap:wrap;position:relative;}
+  .lang-switch{display:flex;gap:4px;background:var(--hover);padding:4px;border-radius:8px;}
+  .lang-switch button{border:none;background:transparent;padding:6px 12px;border-radius:6px;cursor:pointer;font-weight:600;color:var(--muted);font-size:.85rem;}
+  .lang-switch button.active{background:var(--accent);color:#fff;}
+  .icon-btn{border:1px solid var(--border);background:var(--card);color:var(--text);width:38px;height:38px;border-radius:8px;cursor:pointer;font-size:1.1rem;display:flex;align-items:center;justify-content:center;transition:.15s;}
+  .icon-btn:hover{background:var(--hover);border-color:var(--accent2);}
+  .icon-btn.help-btn{font-weight:800;font-size:1rem;}
+  
+  .color-picker{display:flex;gap:4px;align-items:center;background:var(--hover);padding:4px;border-radius:8px;flex-wrap:wrap;}
+  .color-dot{width:24px;height:24px;border-radius:50%;border:2px solid transparent;cursor:pointer;transition:.15s;}
+  .color-dot:hover{transform:scale(1.15);}
+  .color-dot.active{border-color:var(--text);}
+  .color-dot[data-color="green"]{background:#4a7c59;}
+  .color-dot[data-color="blue"]{background:#3a6ea5;}
+  .color-dot[data-color="red"]{background:#a53a3a;}
+  .color-dot[data-color="purple"]{background:#7a5aa5;}
+  .color-dot[data-color="yellow"]{background:#a58a1a;}
+  .color-dot[data-color="pink"]{background:#c74a7a;}
+  .color-dot[data-color="lime"]{background:#5fa53a;}
+
+  .help-wrapper{position:relative; display:inline-flex;}
+  .help-hint{
+    position:absolute; top:48px; right:0;
+    background:var(--accent); color:#fff; padding:8px 14px; border-radius:10px;
+    font-size:.85rem; font-weight:600; white-space:nowrap;
+    box-shadow:0 4px 16px rgba(0,0,0,0.2); z-index:50; display:none;
+    animation:hintPulse 1.6s ease-in-out infinite;
+  }
+  .help-hint.show{display:block;}
+  .help-hint::after{
+    content:""; position:absolute; top:-7px; right:16px; width:0;height:0;
+    border-left:7px solid transparent; border-right:7px solid transparent; border-bottom:8px solid var(--accent);
+  }
+  .help-hint .arrow{display:inline-block;margin-left:6px;transform:translateY(-1px);}
+  @keyframes hintPulse{0%,100%{transform:translateY(0);}50%{transform:translateY(-3px);}}
+  .help-hint .close-hint{background:none;border:none;color:#fff;cursor:pointer;font-size:1rem;margin-left:8px;opacity:0.8;padding:0;}
+  .help-hint .close-hint:hover{opacity:1;}
+
+  .panel{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:16px;margin-bottom:16px;transition:background .2s,border-color .2s;position:relative;}
+  .collection-bar{display:flex;gap:8px;align-items:center;flex-wrap:wrap;}
+  select,input[type=text],input[type=number],input[type=color],textarea{font-family:inherit;font-size:.95rem;padding:9px 12px;border-radius:8px;border:1px solid var(--border);background:var(--input-bg);color:var(--text);transition:background .2s,border-color .2s,color .2s;}
+  select:focus,input:focus,textarea:focus{outline:2px solid var(--accent2);outline-offset:1px;}
+  select{flex:1;min-width:140px;cursor:pointer;}
+  input[type=number]{width:70px;text-align:center;}
+  button.btn{font-family:inherit;font-size:.9rem;font-weight:600;padding:9px 14px;border-radius:8px;border:1px solid var(--border);background:var(--card);color:var(--accent);cursor:pointer;transition:.15s;}
+  button.btn:hover{background:var(--hover);border-color:var(--accent2);}
+  button.btn.danger{color:var(--danger);}
+  button.btn.danger:hover{background:var(--hover);border-color:var(--danger);}
+  button.btn.primary{background:var(--accent);color:#fff;border-color:var(--accent);}
+  button.btn.primary:hover{background:var(--accent2);}
+  button.btn:disabled{opacity:.5;cursor:not-allowed;}
+  .input-row{display:flex;gap:8px;align-items:flex-start;flex-wrap:wrap;}
+  .input-row .field{flex:1;min-width:140px;display:flex;flex-direction:column;gap:4px;}
+  .input-row textarea{resize:vertical;min-height:44px;max-height:120px;line-height:1.4;}
+  .char-count{font-size:.75rem;color:var(--muted);text-align:right;}
+  .input-row .arrow{color:var(--muted);font-weight:700;flex:0 0 auto;padding-top:10px;}
+  .input-row .btn{flex:0 0 auto;align-self:flex-start;margin-top:2px;}
+  .transcription-row{display:flex;gap:8px;align-items:center;margin-top:8px;flex-wrap:wrap;}
+  .transcription-row label{font-size:.85rem;color:var(--muted);display:flex;align-items:center;gap:4px;}
+  .transcription-row select{flex:0 0 auto;min-width:120px;font-size:.85rem;padding:6px 10px;}
+  .transcription-row input[type=text]{flex:1;min-width:160px;font-size:.9rem;padding:7px 10px;}
+  .file-import-row{display:flex;gap:8px;align-items:center;margin-top:8px;flex-wrap:wrap;}
+  .file-import-row .hint{margin-top:0;}
+  .list-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;flex-wrap:wrap;gap:8px;}
+  .counter{font-size:.85rem;color:var(--muted);}
+  .counter b{color:var(--accent);}
+  ul.word-list{list-style:none;margin:0;padding:0;}
+  ul.word-list li{display:flex;align-items:flex-start;gap:10px;padding:8px 10px;border-bottom:1px solid var(--border);}
+  ul.word-list li:last-child{border-bottom:none;}
+  ul.word-list .num{color:var(--muted);font-size:.8rem;min-width:24px;padding-top:3px;}
+  ul.word-list .kr{font-family:"Noto Sans KR",sans-serif;font-weight:500;flex:1;min-width:80px;word-break:break-word;white-space:pre-wrap;}
+  ul.word-list .tr{flex:1;min-width:80px;word-break:break-word;white-space:pre-wrap;}
+  ul.word-list .tr-block{flex:1;min-width:80px;display:flex;flex-direction:column;gap:2px;}
+  ul.word-list .kr-block{flex:1;min-width:80px;display:flex;flex-direction:column;gap:2px;}
+  ul.word-list .transcription{font-size:.8rem;color:var(--muted);opacity:0.7;font-style:italic;}
+  ul.word-list .acts{display:flex;gap:2px;flex:0 0 auto;}
+  ul.word-list .acts button{border:none;background:transparent;cursor:pointer;font-size:1rem;padding:4px 6px;border-radius:6px;color:var(--text);}
+  ul.word-list .acts button:hover{background:var(--hover);}
+  ul.word-list li.editing textarea{margin:0;flex:1;min-width:80px;}
+  ul.word-list li.editing .acts button{font-size:.8rem;color:var(--accent);font-weight:600;}
+  .empty{text-align:center;color:var(--muted);padding:24px 0;font-size:.9rem;}
+  .settings-grid{display:flex;gap:16px;flex-wrap:wrap;align-items:center;}
+  .settings-grid label{font-size:.9rem;display:flex;align-items:center;gap:6px;}
+  .history-list{list-style:none;margin:0;padding:0;font-size:.85rem;}
+  .history-list li{padding:8px 10px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;gap:10px;cursor:pointer;border-radius:6px;}
+  .history-list li:hover{background:var(--hover);}
+  .history-list li:last-child{border-bottom:none;}
+  .history-list .left{flex:1;min-width:0;}
+  .history-list .title{font-weight:600;color:var(--accent);}
+  .history-list .meta{font-size:.75rem;color:var(--muted);}
+  .history-list .date{color:var(--muted);white-space:nowrap;font-size:.75rem;padding-top:2px;}
+  .history-list li.no-pdf{cursor:default;opacity:.6;}
+  .history-list li.no-pdf:hover{background:transparent;}
+  .toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(80px);background:var(--accent);color:#fff;padding:10px 20px;border-radius:10px;font-size:.9rem;opacity:0;transition:.3s;pointer-events:none;z-index:3000;max-width:90vw;text-align:center;}
+  .toast.show{transform:translateX(-50%) translateY(0);opacity:1;}
+  .spinner{display:inline-block;width:14px;height:14px;border:2px solid #fff;border-top-color:transparent;border-radius:50%;animation:spin .6s linear infinite;vertical-align:middle;margin-right:6px;}
+  @keyframes spin{to{transform:rotate(360deg);}}
+  .backup-row{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px;}
+  #previewArea{width:100%;height:520px;border:1px solid var(--border);border-radius:8px;margin-top:10px;display:none;background:#fff;}
+  .hint{font-size:.75rem;color:var(--muted);margin-top:4px;}
+
+  .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:2000;display:none;align-items:center;justify-content:center;padding:16px;}
+  .modal-overlay.show{display:flex;}
+  .modal{background:var(--card);color:var(--text);border:1px solid var(--border);border-radius:14px;padding:20px;max-width:560px;width:100%;box-shadow:0 10px 40px rgba(0,0,0,0.25);max-height:88vh;overflow-y:auto;}
+  .modal.modal-wide{max-width:720px;}
+  .modal h2{margin:0 0 12px;font-size:1.15rem;color:var(--accent);}
+  .modal textarea{width:100%;min-height:140px;resize:vertical;font-family:monospace;font-size:.8rem;line-height:1.4;word-break:break-all;}
+  .modal-actions{display:flex;gap:8px;justify-content:flex-end;margin-top:12px;flex-wrap:wrap;position:sticky;bottom:0;background:var(--card);padding-top:8px;}
+  .modal .hint{margin-top:6px;}
+  
+  .modal textarea.feedback-text{font-family:inherit;font-size:.95rem;min-height:120px;}
+  .feedback-status{font-size:.85rem;margin-top:10px;text-align:center;font-weight:600;}
+  .feedback-status.success{color:#2e7d32;}
+  .feedback-status.error{color:var(--danger);}
+
+  .help-body h3{color:var(--accent);font-size:1.05rem;margin:20px 0 8px; border-bottom: 2px solid var(--hover); padding-bottom: 4px;}
+  .help-body h3:first-child{margin-top:0;}
+  .help-body p{margin:6px 0;font-size:.9rem;}
+  .help-body ul,.help-body ol{margin:6px 0;padding-left:22px;font-size:.9rem;}
+  .help-body li{margin:4px 0;}
+  .help-body code{background:var(--hover);padding:1px 6px;border-radius:4px;font-size:.85em;}
+  .help-body .note{background:var(--hover);padding:10px 12px;border-radius:8px;font-size:.85rem;margin:10px 0;border-left:3px solid var(--accent);}
+
+  .sidebar-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.4);z-index:1500;display:none;}
+  .sidebar-overlay.show{display:block;}
+  .sidebar{
+    position:fixed;top:0;right:0;height:100vh;width:var(--sidebar-width);max-width:90vw;
+    background:var(--card);border-left:1px solid var(--border);z-index:1600;
+    transform:translateX(100%);transition:transform .3s ease;
+    display:flex;flex-direction:column;padding:20px;overflow-y:auto;
+  }
+  .sidebar.show{transform:translateX(0);}
+  .sidebar h2{font-size:1.1rem;margin:0 0 16px;color:var(--accent);display:flex;justify-content:space-between;align-items:center;}
+  .sidebar .close-sidebar{background:none;border:none;font-size:1.4rem;cursor:pointer;color:var(--muted);}
+  .sidebar .close-sidebar:hover{color:var(--text);}
+  .sidebar .section{margin-bottom:20px;}
+  .sidebar .section h3{font-size:.9rem;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin:0 0 8px;}
+  .sidebar .section button{width:100%;margin-bottom:6px;justify-content:center;}
+  .sidebar .section .hint{margin-top:4px;}
+  .sidebar .settings-row {display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; font-size: 0.9rem;}
+  
+  /* Дополнительные стили для настроек формата */
+  .format-grid { display: flex; flex-wrap: wrap; gap: 16px; align-items: center; background: var(--hover); padding: 12px; border-radius: 8px; margin-top: 12px; }
+  .format-grid label { display: flex; align-items: center; gap: 8px; font-size: .9rem; margin: 0; }
+  .format-grid select, .format-grid input[type="color"] { padding: 4px; border-radius: 4px; height: 32px; }
+  .format-grid input[type="color"] { width: 40px; cursor: pointer; }
+</style>
+</head>
+<body>
+<div class="bg-decor" aria-hidden="true">
+  <div class="lines"></div>
+  <div class="circle c1"></div>
+  <div class="circle c2"></div>
+  <div class="circle c3"></div>
+  <div class="circle c4"></div>
+  <div class="circle c5"></div>
+  <div class="circle c6"></div>
+  <div class="circle c7"></div>
+  
+  <svg class="swirl swirl-1" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+    <path d="M10,90 C10,50 50,50 50,10 C50,50 90,50 90,90" />
+  </svg>
+  <svg class="swirl swirl-2" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+    <path d="M10,90 C10,50 50,50 50,10 C50,50 90,50 90,90" />
+  </svg>
+  <svg class="swirl swirl-3" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+    <path d="M10,90 C10,50 50,50 50,10 C50,50 90,50 90,90" />
+  </svg>
+</div>
+
+<div class="wrap">
+  <header>
+    <h1><span id="appTitle"></span></h1>
+    <div class="header-controls">
+      <div class="help-wrapper">
+        <button class="icon-btn help-btn" id="btnHelp" title="?">?</button>
+        <div class="help-hint" id="helpHint">
+          <span data-i18n="readHelp"></span>
+          <span class="arrow">↗</span>
+          <button class="close-hint" id="closeHint" title="×">×</button>
+        </div>
+      </div>
+      <div class="lang-switch">
+        <button data-lang="ru" id="btnRu">RU</button>
+        <button data-lang="en" id="btnEn">EN</button>
+      </div>
+      <button class="icon-btn" id="btnSettings" title="Настройки">⚙️</button>
+    </div>
+  </header>
+
+  <div class="panel collection-bar">
+    <select id="collectionSelect"></select>
+    <button class="btn" id="btnNewCollection" data-i18n="newCollection"></button>
+    <button class="btn" id="btnRenameCollection" data-i18n="renameCollection"></button>
+    <button class="btn" id="btnShareCode" data-i18n="shareCode"></button>
+    <button class="btn" id="btnPasteCode" data-i18n="pasteCode"></button>
+    <button class="btn danger" id="btnDeleteCollection" data-i18n="deleteCollection"></button>
+  </div>
+
+  <div class="panel">
+    <div class="input-row">
+      <div class="field">
+        <textarea id="inputKorean" data-i18n-placeholder="phWord" rows="1"></textarea>
+        <div class="char-count"><span id="cntKorean">0</span></div>
+      </div>
+      <span class="arrow">→</span>
+      <div class="field">
+        <textarea id="inputTranslation" data-i18n-placeholder="phTranslation" rows="1"></textarea>
+        <div class="char-count"><span id="cntTranslation">0</span></div>
+      </div>
+      <button class="btn" id="btnAdd" data-i18n="add"></button>
+    </div>
+    <div class="transcription-row">
+      <label><span data-i18n="transcription"></span></label>
+      <input type="text" id="inputTranscription" data-i18n-placeholder="phTranscription" maxlength="100">
+      <label><span data-i18n="transcriptionPos"></span>
+        <select id="transcriptionPos">
+          <option value="word" data-i18n-option="posWord"></option>
+          <option value="translation" data-i18n-option="posTranslation"></option>
+        </select>
+      </label>
+    </div>
+    <div class="file-import-row">
+      <button class="btn" id="btnImportFile" data-i18n="importFile"></button>
+      <input type="file" id="fileInput" accept=".txt,.pdf,.docx" style="display:none;">
+      <span class="hint" data-i18n="importFileHint"></span>
+    </div>
+  </div>
+
+  <div class="panel">
+    <div class="list-head">
+      <div class="counter"><span data-i18n="wordList"></span> · <b id="wordCount">0</b> <span data-i18n="words"></span> <span id="totalCount" style="color:var(--muted);"></span></div>
+      <button class="btn danger" id="btnClearList" data-i18n="clearList"></button>
+    </div>
+    <ul class="word-list" id="wordList"></ul>
+    <div class="empty" id="emptyMsg" data-i18n="emptyList"></div>
+  </div>
+
+  <div class="panel">
+    <div class="settings-grid">
+      <label><span data-i18n="pageOrientation"></span>
+        <select id="pageOrientation">
+          <option value="portrait" data-i18n-option="orientPortrait"></option>
+          <option value="landscape" data-i18n-option="orientLandscape"></option>
+        </select>
+      </label>
+      <label><span data-i18n="cardsPerPage"></span>
+        <select id="cardsPerPage">
+          <option value="8">8</option>
+          <option value="12">12</option>
+          <option value="16">16</option>
+          <option value="20">20</option>
+          <option value="24" selected>24</option>
+          <option value="30">30</option>
+          <option value="40">40</option>
+          <option value="48">48</option>
+        </select>
+      </label>
+      <label><span data-i18n="customGrid"></span>
+        <input type="number" id="gridRows" min="1" max="50" placeholder="Ряды" title="Ряды"> ×
+        <input type="number" id="gridCols" min="1" max="20" placeholder="Кол." title="Колонки">
+      </label>
+      <label><span data-i18n="fontSizeLabel"></span>
+        <input type="number" id="fontSize" min="4" max="30" value="10">
+      </label>
+    </div>
+    
+    <!-- Новый блок оформления для PDF -->
+    <div class="format-grid">
+      <label>
+        <span data-i18n="wordColorLabel"></span>
+        <input type="color" id="wordColor" value="#2d3a31">
+      </label>
+      <label>
+        <span data-i18n="transColorLabel"></span>
+        <input type="color" id="transColor" value="#4a7c59">
+      </label>
+      <label>
+        <span data-i18n="fontWeightLabel"></span>
+        <select id="fontWeight" style="padding:4px; border-radius:4px; height:32px;">
+          <option value="normal" data-i18n-option="fontNormal"></option>
+          <option value="bold" data-i18n-option="fontBold"></option>
+        </select>
+      </label>
+    </div>
+
+    <div class="hint" data-i18n="gridHint"></div>
+    <div style="margin-top:12px;display:flex;gap:8px;flex-wrap:wrap;">
+      <button class="btn" id="btnPreview" data-i18n="preview"></button>
+      <button class="btn primary" id="btnDownloadPdf" data-i18n="downloadPdf"></button>
+    </div>
+    <iframe id="previewArea"></iframe>
+  </div>
+
+  <div class="panel">
+    <div class="list-head">
+      <div class="counter">📜 <span data-i18n="history"></span></div>
+      <button class="btn danger" id="btnClearHistory" data-i18n="clearHistory"></button>
+    </div>
+    <ul class="history-list" id="historyList"></ul>
+    <div class="empty" id="emptyHistory" data-i18n="emptyHistory"></div>
+  </div>
+</div>
+
+<div class="sidebar-overlay" id="sidebarOverlay"></div>
+<div class="sidebar" id="sidebar">
+  <h2><span data-i18n="settingsTitle"></span> <button class="close-sidebar" id="btnCloseSidebar">×</button></h2>
+  
+  <div class="section">
+    <h3 data-i18n="interfaceSection"></h3>
+    <div class="settings-row">
+      <span data-i18n="modeLabel"></span>
+      <button class="btn" id="btnMode" style="width:auto;">💻</button>
+    </div>
+    <div class="settings-row">
+      <span data-i18n="themeLabel"></span>
+      <button class="btn" id="btnTheme" style="width:auto;">🌙</button>
+    </div>
+    <div class="settings-row" style="flex-direction:column; align-items:flex-start; gap:8px;">
+      <span data-i18n="colorLabel"></span>
+      <div class="color-picker" id="colorPicker" style="width:100%; justify-content:space-between;">
+        <div class="color-dot" data-color="green" title="Зелёный"></div>
+        <div class="color-dot" data-color="blue" title="Голубой"></div>
+        <div class="color-dot" data-color="red" title="Красный"></div>
+        <div class="color-dot" data-color="purple" title="Сиреневый"></div>
+        <div class="color-dot" data-color="yellow" title="Жёлтый"></div>
+        <div class="color-dot" data-color="pink" title="Розовый"></div>
+        <div class="color-dot" data-color="lime" title="Салатовый"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="section">
+    <h3 data-i18n="backupSection"></h3>
+    <button class="btn" id="btnExport" data-i18n="export"></button>
+    <button class="btn" id="btnImport" data-i18n="import"></button>
+    <input type="file" id="importFile" accept=".json" style="display:none;">
+    <div class="hint" data-i18n="backupHint"></div>
+  </div>
+
+  <div class="section">
+    <h3 data-i18n="feedbackSection"></h3>
+    <button class="btn" id="btnFeedback" data-i18n="feedbackTitle"></button>
+  </div>
+
+  <div class="section">
+    <h3 data-i18n="dangerSection"></h3>
+    <button class="btn danger" id="btnClearAllData" data-i18n="clearAllData"></button>
+  </div>
+</div>
+
+<div class="modal-overlay" id="codeModal">
+  <div class="modal">
+    <h2 id="codeModalTitle">Код</h2>
+    <textarea id="codeTextarea" readonly></textarea>
+    <div class="hint" id="codeModalHint"></div>
+    <div class="modal-actions">
+      <button class="btn" id="btnCopyCode" data-i18n="copy"></button>
+      <button class="btn" id="btnModalImport" data-i18n="importCode" style="display:none;"></button>
+      <button class="btn primary" id="btnCloseModal" data-i18n="close"></button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="helpModal">
+  <div class="modal modal-wide">
+    <h2 id="helpTitle"></h2>
+    <div class="help-body" id="helpBody"></div>
+    <div class="modal-actions">
+      <button class="btn primary" id="btnCloseHelp" data-i18n="close"></button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="feedbackModal">
+  <div class="modal">
+    <h2 data-i18n="feedbackTitle"></h2>
+    <div style="display:flex;flex-direction:column;gap:10px;">
+      <label style="font-size:.9rem;display:flex;flex-direction:column;gap:4px;">
+        <span data-i18n="feedbackType"></span>
+        <select id="feedbackType">
+          <option value="Предложение" data-i18n-option="feedbackSuggestion"></option>
+          <option value="Жалоба" data-i18n-option="feedbackComplaint"></option>
+          <option value="Ошибка" data-i18n-option="feedbackError"></option>
+        </select>
+      </label>
+      <label style="font-size:.9rem;display:flex;flex-direction:column;gap:4px;">
+        <span data-i18n="feedbackText"></span>
+        <textarea id="feedbackText" class="feedback-text" data-i18n-placeholder="feedbackPlaceholder"></textarea>
+      </label>
+      <div class="hint" data-i18n="feedbackHint"></div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn" id="btnCloseFeedback" data-i18n="close"></button>
+      <button class="btn primary" id="btnSendFeedback" data-i18n="feedbackSend"></button>
+    </div>
+    <div id="feedbackStatus" class="feedback-status"></div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/lz-string@1.5.0/libs/lz-string.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/pdf-lib@1.17.1/dist/pdf-lib.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@pdf-lib/fontkit@1.1.1/dist/fontkit.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.4.16/mammoth.browser.min.js"></script>
+<script>
+  if(window.pdfjsLib) {
+    pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.worker.min.js';
+  }
+  if(window.emailjs) {
+    emailjs.init("obpORDdG5yWpFlg5d");
+  }
+</script>
+<script>
+/* ===================== i18n ===================== */
+const I18N = {
+  ru: {
+    appTitle:"Карточки", newCollection:"+ Новая", renameCollection:"✏️ Переименовать", deleteCollection:"🗑️ Удалить",
+    shareCode:"📤 Поделиться", pasteCode:"📥 Вставить код",
+    importFile:"📄 Из файла", importFileHint:"TXT, PDF или DOCX. Строки вида «слово — перевод».",
+    phWord:"Слово", phTranslation:"Перевод", add:"Добавить",
+    transcription:"Транскрипция:", phTranscription:"Например: annyeong",
+    transcriptionPos:"Показывать под:", posWord:"словом", posTranslation:"переводом",
+    wordList:"Список слов", words:"слов", clearList:"Очистить список",
+    emptyList:"Пока пусто. Введи первое слово 👆",
+    pageOrientation:"Лист:", orientPortrait:"портрет", orientLandscape:"альбом",
+    cardsPerPage:"Карточек на лист:",
+    customGrid:"Своя сетка:",
+    fontSizeLabel:"Шрифт (pt):",
+    gridHint:"Можно выбрать готовое число карточек или настроить сетку вручную.",
+    testSheet:"Тестовый лист", downloadPdf:"Скачать PDF", preview:"Превью",
+    history:"История", clearHistory:"Очистить историю", emptyHistory:"История пуста",
+    newCollectionPrompt:"Название новой коллекции:",
+    renameCollectionPrompt:"Новое название коллекции:",
+    deleteCollectionConfirm:"Удалить коллекцию «{name}»?",
+    clearListConfirm:"Очистить весь список слов в этой коллекции?",
+    clearHistoryConfirm:"Очистить историю?",
+    clearAllDataConfirm:"Удалить ВСЕ данные (коллекции, историю, настройки)? Это необратимо.",
+    added:"Слово добавлено", deleted:"Удалено", collectionCreated:"Коллекция создана",
+    collectionRenamed:"Коллекция переименована",
+    collectionDeleted:"Коллекция удалена", listCleared:"Список очищен", historyCleared:"История очищена",
+    allDataCleared:"Все данные удалены",
+    needBoth:"Заполни оба поля", defaultCollection:"Моя коллекция",
+    generating:"Генерирую PDF...", pdfReady:"PDF готов!", pdfError:"Ошибка при создании PDF",
+    noWords:"Нет слов для генерации", lastCollection:"Нельзя удалить последнюю коллекцию",
+    interfaceSection:"Интерфейс", modeLabel:"Режим", themeLabel:"Тема", colorLabel:"Цвет акцента",
+    textSection:"Оформление текста", wordColorLabel:"Цвет слова:", transColorLabel:"Цвет транскрипции:", fontWeightLabel:"Стиль:",
+    fontNormal:"Обычный", fontBold:"Жирный",
+    backupSection:"Резервная копия", export:"Экспорт в JSON", import:"Импорт из JSON",
+    backupHint:"Сохрани файл, чтобы не потерять данные.",
+    feedbackSection:"Связь", dangerSection:"Опасная зона", clearAllData:"Очистить всё",
+    settingsTitle:"Настройки",
+    exported:"Экспортировано!", imported:"Импортировано!", importError:"Ошибка импорта",
+    duplicate:"Такое слово уже есть", totalWords:"· всего: {n}",
+    previewReady:"Превью готово", historyTooBig:"Файл большой — в истории не сохранён",
+    openPdf:"Открыть PDF", noPdf:"PDF не сохранён",
+    copy:"Копировать", close:"Закрыть",
+    importCode:"Импортировать",
+    shareTitle:"Код коллекции «{name}»",
+    shareHint:"Скопируй код и отправь другу. Он нажмёт «Вставить код» и вставит его.",
+    pasteTitle:"Вставить код коллекции",
+    pasteHint:"Вставь сюда код, который прислал друг, и нажми «Импортировать».",
+    copied:"Скопировано!",
+    codeInvalid:"Неверный код",
+    codeImported:"Коллекция «{name}» импортирована",
+    codeEmpty:"Вставь код",
+    codeNoWords:"В коде нет слов",
+    shareEmpty:"Коллекция пуста — нечего делиться",
+    codeReadonly:"Этот код только для чтения",
+    readHelp:"Прочти инструкцию",
+    helpTitle:"📖 Инструкция",
+    helpBody:`
+      <p>Данное приложение поможет вам создать свой набор карточек, которые вы можете распечатать.</p>
+
+      <h3>1. Блок "Коллекция"</h3>
+      <p>Тут вы можете создать группу карт по определенной теме.</p>
+      <ul>
+        <li><b>Новая</b> — создание новой коллекции.</li>
+        <li><b>Переименовать</b> — можете переименовать текущую коллекцию.</li>
+        <li><b>Поделиться</b> — можете поделиться со своим другом коллекцией. Достаточно просто скопировать и отправить код.</li>
+        <li><b>Вставить код</b> — если с вами поделились коллекцией через код, вставьте его в поле и нажмите "Импортировать".</li>
+        <li><b>Удалить</b> — удаляет текущую коллекцию.</li>
+      </ul>
+
+      <h3>2. Блок "Слово-перевод"</h3>
+      <p>Просто вставляете в первое поле слово, во второе перевод (можно и обозначение слова), если нужно транскрипцию, предварительно выбрав, под чем она будет. И нажимаете кнопку <b>"Добавить"</b>.</p>
+      <p>Также вы можете вставить свой файл в формате <b>TXT, PDF и DOCX</b> (лучше всего DOCX).</p>
+      <div class="note">Важно: чтобы сайт прочитал ваш файл, слова должны быть записаны так: <b>слово — перевод.</b></div>
+
+      <h3>3. Блок "Список слов"</h3>
+      <p>Здесь вы можете редактировать свои слова. <b>"Карандаш"</b> позволяет менять слово, <b>"Корзина"</b> удаляет слово. Кнопка <b>"Очистить список"</b> удаляет все слова.</p>
+
+      <h3>4. Блок "Формат"</h3>
+      <p>Тут вы можете изменить ориентацию листа <b>"альбом/портрет"</b>, количество карточек на листе, можете предложить своё разделение листа в <b>"Своя сетка"</b> (приложение само предлагает оптимальное значение), размер шрифта.</p>
+      <p>Также здесь можно настроить цвета слов и транскрипции, а также сделать текст жирным.</p>
+      <p>Кнопка <b>"Превью"</b> без скачки показывает, как будут выглядеть карточки, а кнопка <b>"Скачать PDF"</b> скачивает файл.</p>
+
+      <h3>5. Блок "История"</h3>
+      <p>Здесь показаны ваши последние скачанные PDF-файлы. Кликните на него, и он откроется.</p>
+
+      <h3>6. Блок "Настройки"</h3>
+      <p>Нажмите на кнопку с изображением шестерни (⚙️). Откроется список. Выберите, что вам нужно (смена темы, цвета интерфейса, режима, резервное копирование или связь с нами).</p>
+    `,
+    helpClose:"Понятно",
+    modeDesktop:"💻 Комп", modeMobile:"📱 Телефон",
+    modeSwitchedToMobile:"Режим телефона", modeSwitchedToDesktop:"Режим компьютера",
+    importParsing:"Читаю файл...", importFound:"Найдено {n} пар. Создать коллекцию «{name}»?",
+    importNone:"Не найдено строк с разделителем (—, –, -)",
+    importDone:"Импортировано {n} слов в коллекцию «{name}»",
+    importError:"Ошибка чтения файла",
+    suggestGrid:"Рекомендуемая сетка: {grid} (≈{n} карточек на лист)",
+    feedbackTitle:"✉️ Написать владельцу",
+    feedbackType:"Тема:",
+    feedbackText:"Сообщение:",
+    feedbackSuggestion:"Предложение",
+    feedbackComplaint:"Жалоба",
+    feedbackError:"Ошибка / Баг",
+    feedbackPlaceholder:"Опиши, что случилось или что хочешь предложить...",
+    feedbackHint:"Мы отправим письмо напрямую.",
+    feedbackSend:"Отправить",
+    feedbackSending:"Отправка...",
+    feedbackSuccess:"Письмо успешно отправлено!",
+    feedbackError:"Ошибка отправки. Попробуй позже."
+  },
+  en: {
+    appTitle:"Cards", newCollection:"+ New", renameCollection:"✏️ Rename", deleteCollection:"🗑️ Delete",
+    shareCode:"📤 Share", pasteCode:"📥 Paste code",
+    importFile:"📄 From file", importFileHint:"TXT, PDF or DOCX. Lines like \"word — translation\".",
+    phWord:"Word", phTranslation:"Translation", add:"Add",
+    transcription:"Transcription:", phTranscription:"E.g.: annyeong",
+    transcriptionPos:"Show under:", posWord:"word", posTranslation:"translation",
+    wordList:"Word list", words:"words", clearList:"Clear list",
+    emptyList:"Empty. Add your first word 👆",
+    pageOrientation:"Page:", orientPortrait:"portrait", orientLandscape:"landscape",
+    cardsPerPage:"Cards per page:",
+    customGrid:"Custom grid:",
+    fontSizeLabel:"Font (pt):",
+    gridHint:"You can pick a preset number of cards or set the grid manually.",
+    testSheet:"Test sheet", downloadPdf:"Download PDF", preview:"Preview",
+    history:"History", clearHistory:"Clear history", emptyHistory:"History is empty",
+    newCollectionPrompt:"New collection name:",
+    renameCollectionPrompt:"New collection name:",
+    deleteCollectionConfirm:"Delete collection \"{name}\"?",
+    clearListConfirm:"Clear all words in this collection?",
+    clearHistoryConfirm:"Clear history?",
+    clearAllDataConfirm:"Delete ALL data (collections, history, settings)? This cannot be undone.",
+    added:"Word added", deleted:"Deleted", collectionCreated:"Collection created",
+    collectionRenamed:"Collection renamed",
+    collectionDeleted:"Collection deleted", listCleared:"List cleared", historyCleared:"History cleared",
+    allDataCleared:"All data deleted",
+    needBoth:"Fill both fields", defaultCollection:"My collection",
+    generating:"Generating PDF...", pdfReady:"PDF ready!", pdfError:"PDF generation error",
+    noWords:"No words to generate", lastCollection:"Cannot delete the last collection",
+    interfaceSection:"Interface", modeLabel:"Mode", themeLabel:"Theme", colorLabel:"Accent color",
+    textSection:"Text styling", wordColorLabel:"Word color:", transColorLabel:"Transcription color:", fontWeightLabel:"Style:",
+    fontNormal:"Normal", fontBold:"Bold",
+    backupSection:"Backup", export:"Export to JSON", import:"Import from JSON",
+    backupHint:"Save the file so you don't lose data.",
+    feedbackSection:"Contact", dangerSection:"Danger zone", clearAllData:"Clear all",
+    settingsTitle:"Settings",
+    exported:"Exported!", imported:"Imported!", importError:"Import error",
+    duplicate:"Word already exists", totalWords:"· total: {n}",
+    previewReady:"Preview ready", historyTooBig:"File too big — not saved to history",
+    openPdf:"Open PDF", noPdf:"PDF not saved",
+    copy:"Copy", close:"Close",
+    importCode:"Import",
+    shareTitle:"Collection code «{name}»",
+    shareHint:"Copy the code and send it to a friend. They press \"Paste code\" and paste it.",
+    pasteTitle:"Paste collection code",
+    pasteHint:"Paste the code your friend sent and press \"Import\".",
+    copied:"Copied!",
+    codeInvalid:"Invalid code",
+    codeImported:"Collection «{name}» imported",
+    codeEmpty:"Paste a code",
+    codeNoWords:"No words in code",
+    shareEmpty:"Collection is empty — nothing to share",
+    codeReadonly:"This code is read-only",
+    readHelp:"Read the instructions",
+    helpTitle:"📖 Instructions",
+    helpBody:`
+      <p>This application will help you create your own set of flashcards that you can print out.</p>
+
+      <h3>1. "Collection" block</h3>
+      <p>Here you can create a group of cards on a specific topic.</p>
+      <ul>
+        <li><b>New</b> — create a new collection.</li>
+        <li><b>Rename</b> — rename the current collection.</li>
+        <li><b>Share</b> — share the collection with a friend. Just copy and send the code.</li>
+        <li><b>Paste code</b> — if someone shared a collection with you via code, paste it and click "Import".</li>
+        <li><b>Delete</b> — deletes the current collection.</li>
+      </ul>
+
+      <h3>2. "Word-Translation" block</h3>
+      <p>Just put the word in the first field, the translation in the second (you can also add a transcription, after choosing where it will be shown). Then click <b>"Add"</b>.</p>
+      <p>You can also upload your file in <b>TXT, PDF or DOCX</b> format (DOCX is best).</p>
+      <div class="note">Important: for the site to read your file, words must be written like this: <b>word — translation.</b></div>
+
+      <h3>3. "Word List" block</h3>
+      <p>Here you can edit your words. The <b>"Pencil"</b> allows you to change a word, the <b>"Trash"</b> deletes it. The <b>"Clear list"</b> button deletes all words.</p>
+
+      <h3>4. "Format" block</h3>
+      <p>Here you can change the page orientation <b>"album/portrait"</b>, the number of cards per sheet, or set your own grid in <b>"Custom grid"</b> (the app will suggest the optimal value), and the font size.</p>
+      <p>You can also set the color of words and transcription, and make the text bold.</p>
+      <p>The <b>"Preview"</b> button shows what the cards will look like without downloading, and the <b>"Download PDF"</b> button downloads the file.</p>
+
+      <h3>5. "History" block</h3>
+      <p>Your recently downloaded PDF files are shown here. Click on one and it will open.</p>
+
+      <h3>6. "Settings" block</h3>
+      <p>Click the gear icon (⚙️). A list will open. Choose what you need (change theme, interface color, mode, backup, or contact us).</p>
+    `,
+    helpClose:"Got it",
+    modeDesktop:"💻 Desktop", modeMobile:"📱 Phone",
+    modeSwitchedToMobile:"Phone mode", modeSwitchedToDesktop:"Desktop mode",
+    importParsing:"Reading file...", importFound:"Found {n} pairs. Create collection \"{name}\"?",
+    importNone:"No lines with a separator found (—, –, -)",
+    importDone:"Imported {n} words into \"{name}\"",
+    importError:"Error reading file",
+    suggestGrid:"Suggested grid: {grid} (≈{n} cards per sheet)",
+    feedbackTitle:"✉️ Write to owner",
+    feedbackType:"Topic:",
+    feedbackText:"Message:",
+    feedbackSuggestion:"Suggestion",
+    feedbackComplaint:"Complaint",
+    feedbackError:"Error / Bug",
+    feedbackPlaceholder:"Describe what happened or what you'd like to suggest...",
+    feedbackHint:"We will send the email directly.",
+    feedbackSend:"Send",
+    feedbackSending:"Sending...",
+    feedbackSuccess:"Email sent successfully!",
+    feedbackError:"Sending error. Try again later."
+  }
+};
+
+/* ===================== State ===================== */
+const STORAGE_KEY = "slova_zapominalki_v1";
+const HISTORY_PDF_KEY = "slova_zapominalki_history_pdfs_v1";
+const HISTORY_LIMIT = 20;
+const CODE_PREFIX = "CARD1:";
+const HELP_SEEN_KEY = "slova_zapominalki_help_seen";
+const MODE_KEY = "slova_zapominalki_mode";
+
+let state = {
+  lang:"ru", collections:[], activeCollectionId:null, history:[],
+  settings:{ 
+    gridRows:6, gridCols:4, transcriptionPos:"word", pageOrientation:"portrait", fontSize:10, cardsPerPage:24,
+    wordColor:"#2d3a31", transColor:"#4a7c59", fontWeight:"normal"
+  },
+  theme:"light", color:"green", mode:"auto"
+};
+function uid(){ return Date.now().toString(36)+Math.random().toString(36).slice(2,7); }
+let historyPdfs = {};
+
+function loadState(){
+  try{ const raw=localStorage.getItem(STORAGE_KEY); if(raw) state=Object.assign(state,JSON.parse(raw)); }catch(e){}
+  try{
+    const raw = localStorage.getItem(HISTORY_PDF_KEY);
+    if(raw) historyPdfs = JSON.parse(raw);
+  }catch(e){ historyPdfs = {}; }
+  try{
+    const m = localStorage.getItem(MODE_KEY);
+    if(m) state.mode = m;
+  }catch(e){}
+  if(!state.collections.length){
+    const c={id:uid(),name:I18N[state.lang].defaultCollection,words:[]};
+    state.collections.push(c); state.activeCollectionId=c.id;
+  }
+  if(!state.activeCollectionId||!state.collections.find(c=>c.id===state.activeCollectionId))
+    state.activeCollectionId=state.collections[0].id;
+  if(!state.settings.pageOrientation) state.settings.pageOrientation = "portrait";
+  if(!state.settings.fontSize) state.settings.fontSize = 10;
+  if(!state.settings.cardsPerPage) state.settings.cardsPerPage = 24;
+  if(!state.settings.wordColor) state.settings.wordColor = "#2d3a31";
+  if(!state.settings.transColor) state.settings.transColor = "#4a7c59";
+  if(!state.settings.fontWeight) state.settings.fontWeight = "normal";
+}
+function saveState(){ try{ localStorage.setItem(STORAGE_KEY,JSON.stringify(state)); }catch(e){} }
+function saveMode(){ try{ localStorage.setItem(MODE_KEY, state.mode); }catch(e){} }
+function saveHistoryPdfs(){
+  try{ localStorage.setItem(HISTORY_PDF_KEY, JSON.stringify(historyPdfs)); }
+  catch(e){
+    const ids = state.history.map(h=>h.id);
+    const keep = ids.slice(-5);
+    const newObj = {};
+    keep.forEach(id => { if(historyPdfs[id]) newObj[id] = historyPdfs[id]; });
+    historyPdfs = newObj;
+    try{ localStorage.setItem(HISTORY_PDF_KEY, JSON.stringify(historyPdfs)); }catch(e2){}
+  }
+}
+function t(k){ return (I18N[state.lang]&&I18N[state.lang][k])||k; }
+function activeCollection(){ return state.collections.find(c=>c.id===state.activeCollectionId)||state.collections[0]; }
+
+/* ===================== Theme & Color & Mode ===================== */
+function applyTheme(){
+  document.body.classList.toggle("dark", state.theme === "dark");
+  $("btnTheme").textContent = state.theme === "dark" ? "☀️" : "🌙";
+}
+function applyColor(){
+  ["green","blue","red","purple","yellow","pink","lime"].forEach(c=>{
+    document.body.classList.toggle("color-"+c, state.color === c);
+  });
+  document.querySelectorAll(".color-dot").forEach(d=>{
+    d.classList.toggle("active", d.dataset.color === state.color);
+  });
+}
+function effectiveMode(){
+  if(state.mode === "mobile") return "mobile";
+  if(state.mode === "desktop") return "desktop";
+  return (window.innerWidth <= 600) ? "mobile" : "desktop";
+}
+function applyMode(){
+  const m = effectiveMode();
+  document.body.classList.toggle("mobile-mode", m === "mobile");
+  document.body.classList.toggle("desktop-mode", m === "desktop");
+  const btn = $("btnMode");
+  if(m === "mobile"){
+    btn.textContent = "📱";
+    btn.title = t("modeMobile");
+  } else {
+    btn.textContent = "💻";
+    btn.title = t("modeDesktop");
+  }
+}
+function toggleMode(){
+  const current = effectiveMode();
+  const next = current === "mobile" ? "desktop" : "mobile";
+  state.mode = next;
+  saveMode();
+  applyMode();
+  toast(next === "mobile" ? t("modeSwitchedToMobile") : t("modeSwitchedToDesktop"));
+}
+
+/* ===================== UI ===================== */
+const $ = id=>document.getElementById(id);
+const collectionSelect=$("collectionSelect"), inputKorean=$("inputKorean"),
+  inputTranslation=$("inputTranslation"), inputTranscription=$("inputTranscription"),
+  wordListEl=$("wordList"), emptyMsg=$("emptyMsg"),
+  wordCountEl=$("wordCount"), totalCountEl=$("totalCount"),
+  historyListEl=$("historyList"), emptyHistory=$("emptyHistory"),
+  toastEl=$("toast"), previewArea=$("previewArea"),
+  codeModal=$("codeModal"), codeTextarea=$("codeTextarea"),
+  codeModalTitle=$("codeModalTitle"), codeModalHint=$("codeModalHint"),
+  btnCopyCode=$("btnCopyCode"), btnModalImport=$("btnModalImport"), btnCloseModal=$("btnCloseModal"),
+  helpModal=$("helpModal"), helpTitle=$("helpTitle"), helpBody=$("helpBody"),
+  btnCloseHelp=$("btnCloseHelp"), helpHint=$("helpHint"),
+  sidebar=$("sidebar"), sidebarOverlay=$("sidebarOverlay"), fileInput=$("fileInput"),
+  feedbackModal=$("feedbackModal");
+
+let toastTimer=null;
+function toast(msg){ toastEl.textContent=msg; toastEl.classList.add("show"); clearTimeout(toastTimer); toastTimer=setTimeout(()=>toastEl.classList.remove("show"),2400); }
+
+function applyLang(){
+  document.documentElement.lang=state.lang;
+  $("appTitle").textContent=t("appTitle"); document.title=t("appTitle");
+  $("btnRu").classList.toggle("active",state.lang==="ru");
+  $("btnEn").classList.toggle("active",state.lang==="en");
+  document.querySelectorAll("[data-i18n]").forEach(el=>el.textContent=t(el.dataset.i18n));
+  document.querySelectorAll("[data-i18n-placeholder]").forEach(el=>el.placeholder=t(el.dataset.i18nPlaceholder));
+  document.querySelectorAll("[data-i18n-option]").forEach(el=>el.textContent=t(el.dataset.i18nOption));
+  if(helpModal.classList.contains("show")){
+    helpTitle.textContent = t("helpTitle");
+    helpBody.innerHTML = t("helpBody");
+  }
+  applyMode();
+}
+function renderCollections(){
+  collectionSelect.innerHTML="";
+  state.collections.forEach(c=>{
+    const opt=document.createElement("option");
+    opt.value=c.id; opt.textContent=c.name+" ("+c.words.length+")";
+    if(c.id===state.activeCollectionId) opt.selected=true;
+    collectionSelect.appendChild(opt);
+  });
+}
+function renderWords(){
+  const col=activeCollection(), words=col?col.words:[];
+  wordListEl.innerHTML=""; wordCountEl.textContent=words.length;
+  const total = state.collections.reduce((s,c)=>s+c.words.length,0);
+  totalCountEl.textContent = total > words.length ? "· "+t("totalWords").replace("{n}", total) : "";
+  emptyMsg.style.display=words.length?"none":"block";
+  const pos = state.settings.transcriptionPos;
+  words.forEach((w,i)=>{
+    const li=document.createElement("li");
+    const num=document.createElement("span"); num.className="num"; num.textContent=(i+1)+".";
+
+    const krBlock=document.createElement("span"); krBlock.className="kr-block";
+    const krText=document.createElement("span"); krText.className="kr"; krText.textContent=w.korean;
+    krBlock.appendChild(krText);
+    if(pos === "word" && w.transcription){
+      const tr=document.createElement("span"); tr.className="transcription"; tr.textContent="("+w.transcription+")";
+      krBlock.appendChild(tr);
+    }
+
+    const trBlock=document.createElement("span"); trBlock.className="tr-block";
+    const trText=document.createElement("span"); trText.className="tr"; trText.textContent=w.translation;
+    trBlock.appendChild(trText);
+    if(pos === "translation" && w.transcription){
+      const tr=document.createElement("span"); tr.className="transcription"; tr.textContent="("+w.transcription+")";
+      trBlock.appendChild(tr);
+    }
+
+    const acts=document.createElement("span"); acts.className="acts";
+    const editBtn=document.createElement("button"); editBtn.textContent="✏️";
+    editBtn.onclick=()=>startEdit(li,w);
+    const delBtn=document.createElement("button"); delBtn.textContent="🗑️";
+    delBtn.onclick=()=>{ col.words=col.words.filter(x=>x.id!==w.id); saveState(); renderAll(); toast(t("deleted")); };
+    acts.appendChild(editBtn); acts.appendChild(delBtn);
+
+    li.appendChild(num); li.appendChild(krBlock); li.appendChild(trBlock); li.appendChild(acts);
+    wordListEl.appendChild(li);
+  });
+}
+function startEdit(li,w){
+  li.classList.add("editing"); li.innerHTML="";
+  const krIn=document.createElement("textarea"); krIn.value=w.korean; krIn.rows=1; krIn.style.flex="1"; krIn.style.minWidth="80px";
+  const trIn=document.createElement("textarea"); trIn.value=w.translation; trIn.rows=1; trIn.style.flex="1"; trIn.style.minWidth="80px";
+  const transIn=document.createElement("input"); transIn.type="text"; transIn.value=w.transcription||""; transIn.maxLength=100; transIn.placeholder=t("phTranscription"); transIn.style.flex="1"; transIn.style.minWidth="100px";
+  const acts=document.createElement("span"); acts.className="acts";
+  const saveBtn=document.createElement("button"); saveBtn.textContent="✔";
+  saveBtn.onclick=()=>{ const k=krIn.value.trim(),tr=trIn.value.trim(); if(!k||!tr){toast(t("needBoth"));return;} w.korean=k; w.translation=tr; w.transcription=transIn.value.trim(); saveState(); renderAll(); };
+  const cancelBtn=document.createElement("button"); cancelBtn.textContent="✖"; cancelBtn.onclick=()=>renderWords();
+  acts.appendChild(saveBtn); acts.appendChild(cancelBtn);
+  li.appendChild(krIn); li.appendChild(trIn); li.appendChild(transIn); li.appendChild(acts);
+  krIn.focus(); krIn.select();
+  const onKey=e=>{ if(e.key==="Enter" && !e.shiftKey){e.preventDefault();saveBtn.click();} };
+  krIn.addEventListener("keydown",onKey); trIn.addEventListener("keydown",onKey); transIn.addEventListener("keydown",onKey);
+}
+function renderSettings(){
+  $("pageOrientation").value=state.settings.pageOrientation;
+  $("cardsPerPage").value=state.settings.cardsPerPage || "";
+  $("gridRows").value=state.settings.gridRows;
+  $("gridCols").value=state.settings.gridCols;
+  $("transcriptionPos").value=state.settings.transcriptionPos;
+  $("fontSize").value=state.settings.fontSize;
+  $("wordColor").value=state.settings.wordColor;
+  $("transColor").value=state.settings.transColor;
+  $("fontWeight").value=state.settings.fontWeight;
+}
+function renderHistory(){
+  historyListEl.innerHTML=""; emptyHistory.style.display=state.history.length?"none":"block";
+  state.history.slice().reverse().forEach(h=>{
+    const li=document.createElement("li");
+    const hasPdf = !!historyPdfs[h.id];
+    if(!hasPdf) li.classList.add("no-pdf");
+    const left=document.createElement("div"); left.className="left";
+    const title=document.createElement("div"); title.className="title"; title.textContent = "«"+h.collectionName+"»";
+    const meta=document.createElement("div"); meta.className="meta";
+    meta.textContent = h.cardCount+" "+t("words")+" · "+(h.grid||"")+ (hasPdf ? " · 👁 "+t("openPdf") : " · "+t("noPdf"));
+    left.appendChild(title); left.appendChild(meta);
+    const right=document.createElement("span"); right.className="date"; right.textContent=h.date;
+    li.appendChild(left); li.appendChild(right);
+    if(hasPdf) li.onclick = ()=> openHistoryPdf(h.id);
+    historyListEl.appendChild(li);
+  });
+}
+function renderAll(){ renderCollections(); renderWords(); renderSettings(); renderHistory(); }
+
+function openHistoryPdf(id){
+  const b64 = historyPdfs[id];
+  if(!b64) return;
+  try{
+    const bin = atob(b64);
+    const arr = new Uint8Array(bin.length);
+    for(let i=0;i<bin.length;i++) arr[i]=bin.charCodeAt(i);
+    const blob = new Blob([arr], { type: "application/pdf" });
+    const url = URL.createObjectURL(blob);
+    previewArea.src = url; previewArea.style.display = "block";
+    previewArea.scrollIntoView({behavior:"smooth", block:"start"});
+    setTimeout(()=>URL.revokeObjectURL(url), 60000);
+  }catch(e){ toast("Ошибка: "+e.message); }
+}
+
+/* ===================== Help & Feedback ===================== */
+function showHelpHintIfFirstTime(){
+  let seen = false;
+  try{ seen = localStorage.getItem(HELP_SEEN_KEY) === "1"; }catch(e){}
+  if(!seen) helpHint.classList.add("show");
+}
+function markHelpSeen(){
+  try{ localStorage.setItem(HELP_SEEN_KEY, "1"); }catch(e){}
+  helpHint.classList.remove("show");
+}
+function openHelp(){
+  helpTitle.textContent = t("helpTitle");
+  helpBody.innerHTML = t("helpBody");
+  helpModal.classList.add("show");
+  markHelpSeen();
+}
+function closeHelp(){ helpModal.classList.remove("show"); }
+
+function openFeedback(){ 
+  $("feedbackStatus").textContent = "";
+  $("feedbackStatus").className = "feedback-status";
+  feedbackModal.classList.add("show"); 
+}
+function closeFeedback(){ feedbackModal.classList.remove("show"); }
+
+function sendFeedback(){
+  const topic = $("feedbackType").value;
+  const text = $("feedbackText").value.trim();
+  const statusEl = $("feedbackStatus");
+  const btn = $("btnSendFeedback");
+
+  if(!text){ toast(t("feedbackPlaceholder")); return; }
+  
+  btn.disabled = true;
+  statusEl.textContent = t("feedbackSending");
+  statusEl.className = "feedback-status";
+
+  const templateParams = {
+    topic: topic,
+    message: text
+  };
+
+  emailjs.send("service_cr8vp58", "template_ia9vxwk", templateParams)
+    .then(() => {
+      statusEl.textContent = t("feedbackSuccess");
+      statusEl.classList.add("success");
+      $("feedbackText").value = "";
+      setTimeout(() => { closeFeedback(); }, 2000);
+    })
+    .catch((err) => {
+      console.error("EmailJS Error:", err);
+      statusEl.textContent = t("feedbackError");
+      statusEl.classList.add("error");
+    })
+    .finally(() => {
+      btn.disabled = false;
+    });
+}
+
+/* ===================== Sidebar ===================== */
+function openSidebar(){ sidebar.classList.add("show"); sidebarOverlay.classList.add("show"); }
+function closeSidebar(){ sidebar.classList.remove("show"); sidebarOverlay.classList.remove("show"); }
+
+/* ===================== Char counters ===================== */
+function updateCharCount(input, span){ span.textContent = input.value.length; }
+inputKorean.addEventListener("input", ()=>updateCharCount(inputKorean, $("cntKorean")));
+inputTranslation.addEventListener("input", ()=>updateCharCount(inputTranslation, $("cntTranslation")));
+
+/* ===================== Actions ===================== */
+function addWord(){
+  const k=inputKorean.value.trim(), tr=inputTranslation.value.trim();
+  const trans=inputTranscription.value.trim();
+  if(!k||!tr){ toast(t("needBoth")); return; }
+  const col = activeCollection();
+  if(col.words.some(w=>w.korean===k && w.translation===tr)){ toast(t("duplicate")); return; }
+  col.words.push({id:uid(),korean:k,translation:tr,transcription:trans});
+  saveState(); inputKorean.value=""; inputTranslation.value=""; inputTranscription.value=""; inputKorean.focus();
+  $("cntKorean").textContent="0"; $("cntTranslation").textContent="0";
+  renderAll(); toast(t("added"));
+}
+function newCollection(){
+  const name=prompt(t("newCollectionPrompt"));
+  if(!name||!name.trim()) return;
+  const c={id:uid(),name:name.trim(),words:[]};
+  state.collections.push(c); state.activeCollectionId=c.id;
+  saveState(); renderAll(); toast(t("collectionCreated"));
+}
+function renameCollection(){
+  const col = activeCollection();
+  if(!col) return;
+  const name = prompt(t("renameCollectionPrompt"), col.name);
+  if(!name || !name.trim() || name.trim() === col.name) return;
+  const finalName = uniqueCollectionName(name.trim());
+  col.name = finalName;
+  saveState(); renderAll(); toast(t("collectionRenamed"));
+}
+function deleteCollection(){
+  if(state.collections.length<=1){ toast(t("lastCollection")); return; }
+  const col=activeCollection();
+  if(!confirm(t("deleteCollectionConfirm").replace("{name}",col.name))) return;
+  state.collections=state.collections.filter(c=>c.id!==col.id);
+  state.activeCollectionId=state.collections[0].id;
+  saveState(); renderAll(); toast(t("collectionDeleted"));
+}
+function clearList(){
+  const col=activeCollection();
+  if(!col.words.length) return;
+  if(!confirm(t("clearListConfirm"))) return;
+  col.words=[]; saveState(); renderAll(); toast(t("listCleared"));
+}
+function clearHistory(){
+  if(!state.history.length) return;
+  if(!confirm(t("clearHistoryConfirm"))) return;
+  state.history=[]; historyPdfs={}; saveState(); saveHistoryPdfs(); renderHistory(); toast(t("historyCleared"));
+}
+function clearAllData(){
+  if(!confirm(t("clearAllDataConfirm"))) return;
+  localStorage.removeItem(STORAGE_KEY);
+  localStorage.removeItem(HISTORY_PDF_KEY);
+  localStorage.removeItem(MODE_KEY);
+  localStorage.removeItem(HELP_SEEN_KEY);
+  location.reload();
+}
+
+/* ===================== Share / Paste code ===================== */
+function encodeCollection(col){
+  const payload = {
+    n: col.name,
+    w: col.words.map(w => {
+      const arr = [w.korean, w.translation];
+      if(w.transcription) arr.push(w.transcription);
+      return arr;
+    })
+  };
+  const json = JSON.stringify(payload);
+  const compressed = LZString.compressToEncodedURIComponent(json);
+  return CODE_PREFIX + compressed;
+}
+function decodeCollection(code){
+  code = code.trim();
+  if(!code.startsWith(CODE_PREFIX)) throw new Error("bad prefix");
+  const compressed = code.slice(CODE_PREFIX.length);
+  const json = LZString.decompressFromEncodedURIComponent(compressed);
+  if(!json) throw new Error("decompress failed");
+  const payload = JSON.parse(json);
+  if(!payload || typeof payload.n !== "string" || !Array.isArray(payload.w)) throw new Error("bad payload");
+  const words = payload.w.map(item=>{
+    if(!Array.isArray(item) || item.length < 2) return null;
+    return {
+      id: uid(),
+      korean: String(item[0] || ""),
+      translation: String(item[1] || ""),
+      transcription: item[2] ? String(item[2]) : ""
+    };
+  }).filter(Boolean);
+  return { name: payload.n, words };
+}
+function uniqueCollectionName(baseName){
+  let name = baseName || "Импорт";
+  if(!state.collections.some(c=>c.name === name)) return name;
+  let i = 2;
+  while(state.collections.some(c=>c.name === name + " (" + i + ")")) i++;
+  return name + " (" + i + ")";
+}
+function shareCollection(){
+  const col = activeCollection();
+  if(!col || !col.words.length){ toast(t("shareEmpty")); return; }
+  try{
+    const code = encodeCollection(col);
+    codeTextarea.value = code;
+    codeTextarea.readOnly = true;
+    codeModalTitle.textContent = t("shareTitle").replace("{name}", col.name);
+    codeModalHint.textContent = t("shareHint");
+    btnCopyCode.style.display = "";
+    btnModalImport.style.display = "none";
+    codeModal.classList.add("show");
+  }catch(err){ console.error(err); toast("Ошибка: " + err.message); }
+}
+function pasteCode(){
+  codeTextarea.value = "";
+  codeTextarea.readOnly = false;
+  codeModalTitle.textContent = t("pasteTitle");
+  codeModalHint.textContent = t("pasteHint");
+  btnCopyCode.style.display = "none";
+  btnModalImport.style.display = "";
+  codeModal.classList.add("show");
+  setTimeout(()=>codeTextarea.focus(), 50);
+}
+function importCode(){
+  const code = codeTextarea.value.trim();
+  if(!code){ toast(t("codeEmpty")); return; }
+  try{
+    const decoded = decodeCollection(code);
+    if(!decoded.words.length){ toast(t("codeNoWords")); return; }
+    const finalName = uniqueCollectionName(decoded.name);
+    const c = { id: uid(), name: finalName, words: decoded.words };
+    state.collections.push(c);
+    state.activeCollectionId = c.id;
+    saveState(); renderAll();
+    codeModal.classList.remove("show");
+    toast(t("codeImported").replace("{name}", finalName));
+  }catch(err){ console.error(err); toast(t("codeInvalid")); }
+}
+
+/* ===================== Export / Import (бэкап) ===================== */
+function exportData(){
+  const data = { version:1, exportedAt:new Date().toISOString(), collections:state.collections, history:state.history, settings:state.settings, theme:state.theme, color:state.color, mode:state.mode };
+  const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a"); a.href = url; a.download = "cards-backup-"+Date.now()+".json"; a.click();
+  setTimeout(()=>URL.revokeObjectURL(url), 1000); toast(t("exported"));
+}
+async function importData(file){
+  if(!file) return;
+  try{
+    const text = await file.text();
+    const data = JSON.parse(text);
+    if(!data.collections || !Array.isArray(data.collections)) throw new Error("bad format");
+    if(!confirm("Импортировать " + data.collections.length + " коллекций? Текущие данные будут заменены.")) return;
+    state.collections = data.collections;
+    state.history = data.history || [];
+    state.settings = Object.assign(state.settings, data.settings || {});
+    if(data.theme) state.theme = data.theme;
+    if(data.color) state.color = data.color;
+    if(data.mode) state.mode = data.mode;
+    if(!state.settings.pageOrientation) state.settings.pageOrientation = "portrait";
+    if(!state.settings.fontSize) state.settings.fontSize = 10;
+    if(!state.settings.cardsPerPage) state.settings.cardsPerPage = 24;
+    if(!state.settings.wordColor) state.settings.wordColor = "#2d3a31";
+    if(!state.settings.transColor) state.settings.transColor = "#4a7c59";
+    if(!state.settings.fontWeight) state.settings.fontWeight = "normal";
+    state.activeCollectionId = state.collections[0] ? state.collections[0].id : null;
+    historyPdfs = {}; saveState(); saveHistoryPdfs(); renderAll(); applyTheme(); applyColor(); applyMode(); closeSidebar(); toast(t("imported"));
+  }catch(err){ toast(t("importError") + ": " + err.message); }
+}
+
+/* ===================== Import File (TXT / PDF / DOCX) ===================== */
+async function extractTextFromFile(file){
+  const name = file.name.toLowerCase();
+
+  if(name.endsWith(".txt")){
+    return await file.text();
+  }
+
+  if(name.endsWith(".docx")){
+    const arrayBuffer = await file.arrayBuffer();
+    const result = await mammoth.extractRawText({ arrayBuffer });
+    return result.value;
+  }
+
+  if(name.endsWith(".pdf")){
+    const arrayBuffer = await file.arrayBuffer();
+    const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+    let fullText = "";
+
+    for(let i = 1; i <= pdf.numPages; i++){
+      const page = await pdf.getPage(i);
+      const textContent = await page.getTextContent();
+      
+      const linesMap = new Map();
+      
+      textContent.items.forEach(item => {
+        if(!item.str || !item.str.trim()) return;
+        const y = Math.round(item.transform[5]); 
+        const x = item.transform[4];
+        
+        let foundKey = null;
+        for(const key of linesMap.keys()){
+          if(Math.abs(key - y) <= 3){
+            foundKey = key;
+            break;
+          }
+        }
+        
+        if(foundKey === null){
+          linesMap.set(y, [{ x, str: item.str }]);
+        } else {
+          linesMap.get(foundKey).push({ x, str: item.str });
+        }
+      });
+
+      const sortedYs = Array.from(linesMap.keys()).sort((a, b) => b - a);
+      
+      sortedYs.forEach(y => {
+        const items = linesMap.get(y);
+        items.sort((a, b) => a.x - b.x);
+        const lineText = items.map(it => it.str).join(" ").trim();
+        if(lineText) fullText += lineText + "\n";
+      });
+      
+      fullText += "\n";
+    }
+    return fullText;
+  }
+
+  throw new Error("Unsupported file type");
+}
+
+function parsePairs(text){
+  const lines = text.split(/\r?\n/);
+  const pairs = [];
+  const seen = new Set();
+  const separators = [" — ", " – ", " - ", "—", "–"];
+
+  for(const raw of lines){
+    const line = raw.trim();
+    if(!line) continue;
+
+    let sep = null;
+    let idx = -1;
+    for(const s of separators){
+      const pos = line.indexOf(s);
+      if(pos > 0 && (idx === -1 || pos < idx)){
+        idx = pos;
+        sep = s;
+      }
+    }
+    if(!sep) continue;
+
+    const word = line.slice(0, idx).trim();
+    const translation = line.slice(idx + sep.length).trim();
+    if(!word || !translation) continue;
+
+    if(word.startsWith("#") || word.startsWith("##")) continue;
+    if(word.length > 5000 || translation.length > 5000) continue;
+
+    const key = word + "||" + translation;
+    if(seen.has(key)) continue;
+    seen.add(key);
+
+    pairs.push({
+      id: uid(),
+      korean: word,
+      translation: translation,
+      transcription: ""
+    });
+  }
+  return pairs;
+}
+
+function suggestGrid(count){
+  if(count <= 6) return { rows: 2, cols: 3 };
+  if(count <= 12) return { rows: 3, cols: 4 };
+  if(count <= 16) return { rows: 4, cols: 4 };
+  if(count <= 20) return { rows: 4, cols: 5 };
+  if(count <= 24) return { rows: 4, cols: 6 };
+  if(count <= 30) return { rows: 5, cols: 6 };
+  if(count <= 40) return { rows: 5, cols: 8 };
+  if(count <= 48) return { rows: 6, cols: 8 };
+  for(let cols = 6; cols <= 8; cols++){
+    const rows = Math.ceil(count / cols);
+    if(rows <= 50) return { rows, cols };
+  }
+  return { rows: 50, cols: 20 };
+}
+
+async function handleFileImport(file){
+  if(!file) return;
+  toast(t("importParsing"));
+  try{
+    const text = await extractTextFromFile(file);
+    const pairs = parsePairs(text);
+    if(!pairs.length){ toast(t("importNone")); return; }
+
+    const baseName = file.name.replace(/\.[^.]+$/, "");
+    const suggested = suggestGrid(pairs.length);
+    const msg = t("importFound").replace("{n}", pairs.length).replace("{name}", baseName)
+      + "\n\n" + t("suggestGrid").replace("{grid}", suggested.rows + "×" + suggested.cols).replace("{n}", suggested.rows * suggested.cols);
+    if(!confirm(msg)) return;
+
+    const finalName = uniqueCollectionName(baseName);
+    const c = { id: uid(), name: finalName, words: pairs };
+    state.collections.push(c);
+    state.activeCollectionId = c.id;
+    state.settings.gridRows = suggested.rows;
+    state.settings.gridCols = suggested.cols;
+    state.settings.cardsPerPage = suggested.rows * suggested.cols;
+    saveState(); renderAll();
+    toast(t("importDone").replace("{n}", pairs.length).replace("{name}", finalName));
+  }catch(err){
+    console.error(err);
+    toast(t("importError") + ": " + err.message);
+  }
+}
+
+/* ===================== PDF ===================== */
+const A4 = { w: 595.28, h: 841.89 };
+const MARGIN = 28;
+let fontCache = {};
+
+const FONT_URLS = {
+  "CJK": "https://raw.githubusercontent.com/notofonts/noto-cjk/main/Sans/OTF/Korean/NotoSansCJKkr-Regular.otf",
+  "HEBREW": "https://raw.githubusercontent.com/notofonts/noto-fonts/main/hinted/ttf/NotoSansHebrew/NotoSansHebrew-Regular.ttf"
+};
+
+function isHebrew(text){
+  if(!text) return false;
+  for(const ch of text){
+    const code = ch.codePointAt(0);
+    if(code >= 0x0590 && code <= 0x05FF) return true;
+  }
+  return false;
+}
+function pickFontKey(text){ return isHebrew(text) ? "HEBREW" : "CJK"; }
+
+async function loadFontBytes(key){
+  if(fontCache[key]) return fontCache[key];
+  const url = FONT_URLS[key] || FONT_URLS["CJK"];
+  const res = await fetch(url);
+  if(!res.ok) throw new Error("Font load failed: "+key+" ("+res.status+")");
+  const buf = await res.arrayBuffer();
+  fontCache[key] = buf;
+  return buf;
+}
+async function getFont(pdfDoc, text){
+  const key = pickFontKey(text);
+  const bytes = await loadFontBytes(key);
+  return await pdfDoc.embedFont(bytes, { subset: true });
+}
+
+function wrapText(font, text, maxWidth, size){
+  const lines = [];
+  const paragraphs = String(text).split(/\r?\n/);
+  paragraphs.forEach(p=>{
+    const words = p.split(/\s+/).filter(w=>w.length>0);
+    if(words.length === 0){ lines.push(""); return; }
+    let line = "";
+    words.forEach(word=>{
+      const test = line ? line + " " + word : word;
+      if(font.widthOfTextAtSize(test, size) <= maxWidth){ line = test; }
+      else {
+        if(line) lines.push(line);
+        if(font.widthOfTextAtSize(word, size) > maxWidth){
+          let chunk = "";
+          for(const ch of word){
+            if(font.widthOfTextAtSize(chunk + ch, size) <= maxWidth){ chunk += ch; }
+            else { if(chunk) lines.push(chunk); chunk = ch; }
+          }
+          line = chunk;
+        } else { line = word; }
+      }
+    });
+    if(line) lines.push(line);
+  });
+  return lines;
+}
+
+function layoutText(font, text, maxW, maxH, maxSize, minSize){
+  let size = maxSize; let lines = [];
+  while(size >= minSize){
+    lines = wrapText(font, text, maxW, size);
+    const lineHeight = size * 1.15;
+    if(lines.length * lineHeight <= maxH) break;
+    size -= 0.5;
+  }
+  const lineHeight = size * 1.15;
+  return { size, lines, lineHeight, totalH: lines.length * lineHeight };
+}
+
+function hexToRgb(hex) {
+  hex = hex.replace('#', '');
+  const r = parseInt(hex.substring(0, 2), 16) / 255;
+  const g = parseInt(hex.substring(2, 4), 16) / 255;
+  const b = parseInt(hex.substring(4, 6), 16) / 255;
+  return { r, g, b };
+}
+
+async function generatePdf(words, opts){
+  const { PDFDocument, rgb } = PDFLib;
+  
+  const pdfDoc = await PDFDocument.create();
+  pdfDoc.registerFontkit(fontkit);
+
+  const fontMap = {};
+  const ensureFont = async (text) => {
+    const key = pickFontKey(text);
+    if(!fontMap[key]) fontMap[key] = await getFont(pdfDoc, text);
+    return fontMap[key];
+  };
+  for(const w of words){ await ensureFont(w.korean); await ensureFont(w.translation); if(w.transcription) await ensureFont(w.transcription); }
+
+  const isLandscape = opts.pageOrientation === "landscape";
+  const pageW = isLandscape ? A4.h : A4.w;
+  const pageH = isLandscape ? A4.w : A4.h;
+
+  const rows = Math.max(1, Math.min(50, Math.floor(opts.rows)||6));
+  const cols = Math.max(1, Math.min(20, Math.floor(opts.cols)||4));
+  const perPage = rows * cols;
+  
+  const gridW = pageW - MARGIN * 2;
+  const gridH = pageH - MARGIN * 2;
+  
+  const cellW = gridW / cols;
+  const cellH = gridH / rows;
+  
+  const totalCards = opts.isTest ? perPage : words.length;
+  const pagesCount = Math.max(1, Math.ceil(totalCards / perPage));
+  const borderColor = rgb(0.6, 0.65, 0.6);
+
+  const wRgb = hexToRgb(opts.wordColor || "#2d3a31");
+  const tRgb = hexToRgb(opts.transColor || "#4a7c59");
+  
+  const textColor = rgb(wRgb.r, wRgb.g, wRgb.b);
+  const transColor = rgb(tRgb.r, tRgb.g, tRgb.b);
+
+  const cards = [];
+  for(let i=0;i<totalCards;i++){
+    if(opts.isTest) cards.push({ front: "F"+(i+1), back: "B"+(i+1), trans:"" });
+    else cards.push({ front: words[i].korean, back: words[i].translation, trans: words[i].transcription||"" });
+  }
+
+  function backIndex(frontIdx){
+    const row = Math.floor(frontIdx / cols);
+    const col = frontIdx % cols;
+    return row*cols + (cols-1-col);
+  }
+
+  async function drawCard(page, x, y, w, h, mainText, transText, showTransHere){
+    const font = await ensureFont(mainText);
+    const hasTrans = showTransHere && transText;
+    const transFont = hasTrans ? await ensureFont(transText) : null;
+    
+    const baseSize = opts.fontSize || 10;
+    
+    // Транскрипция = 70% от основного шрифта, минимум 4
+    const transSize = Math.max(4, baseSize * 0.7); 
+    const transLineHeight = transSize * 1.15;
+    
+    const maxMainH = h - 10 - (hasTrans ? transLineHeight + 2 : 0);
+    
+    const { size, lines, lineHeight, totalH } = layoutText(font, mainText, w-10, maxMainH, baseSize, 2);
+    const blockH = totalH + (hasTrans ? transLineHeight + 2 : 0);
+    let startY = y + (h - blockH)/2 + blockH - lineHeight + size*0.2;
+    
+    const isBold = opts.fontWeight === "bold";
+
+    lines.forEach((line, idx)=>{
+      const lw = font.widthOfTextAtSize(line, size);
+      page.drawText(line, { 
+        x: x + (w - lw)/2, 
+        y: startY - idx*lineHeight, 
+        size, font, color: textColor,
+        ...(isBold ? { thickness: 0.3, borderColor: textColor, borderWidth: 0.3 } : {}) // Имитация жирного
+      });
+    });
+    
+    if(hasTrans){
+      const transY = startY - lines.length*lineHeight + lineHeight - transLineHeight - 1;
+      const transStr = "(" + transText + ")";
+      const tw = transFont.widthOfTextAtSize(transStr, transSize);
+      if(tw <= w-10){
+        page.drawText(transStr, { x: x + (w - tw)/2, y: transY, size: transSize, font: transFont, color: transColor });
+      } else {
+        const tlines = wrapText(transFont, transStr, w-10, transSize);
+        tlines.forEach((tl, ti)=>{
+          const tlw = transFont.widthOfTextAtSize(tl, transSize);
+          page.drawText(tl, { x: x + (w - tlw)/2, y: transY - ti*transLineHeight, size: transSize, font: transFont, color: transColor });
+        });
+      }
+    }
+  }
+
+  const pos = opts.transcriptionPos || "word";
+
+  for(let p=0; p<pagesCount; p++){
+    const start = p*perPage;
+    const end = Math.min(start+perPage, totalCards);
+    const pageCards = cards.slice(start, end);
+
+    const frontPage = pdfDoc.addPage([pageW, pageH]);
+    for(let i=0; i<=cols; i++) {
+      frontPage.drawLine({ start: { x: MARGIN + i*cellW, y: MARGIN }, end: { x: MARGIN + i*cellW, y: pageH - MARGIN }, thickness: 1, color: borderColor });
+    }
+    for(let i=0; i<=rows; i++) {
+      frontPage.drawLine({ start: { x: MARGIN, y: MARGIN + i*cellH }, end: { x: pageW - MARGIN, y: MARGIN + i*cellH }, thickness: 1, color: borderColor });
+    }
+
+    for(let i=0;i<pageCards.length;i++){
+      const r = Math.floor(i/cols), c = i%cols;
+      const showTrans = pos === "word";
+      await drawCard(frontPage, MARGIN + c*cellW, pageH - MARGIN - (r+1)*cellH, cellW, cellH, pageCards[i].front, pageCards[i].trans, showTrans);
+    }
+
+    const backPage = pdfDoc.addPage([pageW, pageH]);
+    for(let i=0; i<=cols; i++) {
+      backPage.drawLine({ start: { x: MARGIN + i*cellW, y: MARGIN }, end: { x: MARGIN + i*cellW, y: pageH - MARGIN }, thickness: 1, color: borderColor });
+    }
+    for(let i=0; i<=rows; i++) {
+      backPage.drawLine({ start: { x: MARGIN, y: MARGIN + i*cellH }, end: { x: pageW - MARGIN, y: MARGIN + i*cellH }, thickness: 1, color: borderColor });
+    }
+
+    for(let i=0;i<pageCards.length;i++){
+      const backIdx = backIndex(i);
+      const r = Math.floor(backIdx/cols), c = backIdx%cols;
+      const showTrans = pos === "translation";
+      await drawCard(backPage, MARGIN + c*cellW, pageH - MARGIN - (r+1)*cellH, cellW, cellH, pageCards[i].back, pageCards[i].trans, showTrans);
+    }
+  }
+  return await pdfDoc.save();
+}
+
+function makePdfOpts(isTest){
+  return {
+    rows: state.settings.gridRows, cols: state.settings.gridCols,
+    isTest: isTest||false,
+    transcriptionPos: state.settings.transcriptionPos,
+    pageOrientation: state.settings.pageOrientation,
+    fontSize: state.settings.fontSize,
+    wordColor: state.settings.wordColor,
+    transColor: state.settings.transColor,
+    fontWeight: state.settings.fontWeight
+  };
+}
+
+function bytesToBase64(bytes){
+  const arr = new Uint8Array(bytes);
+  let bin = "";
+  const chunk = 0x8000;
+  for(let i=0;i<arr.length;i+=chunk) bin += String.fromCharCode.apply(null, arr.subarray(i,i+chunk));
+  return btoa(bin);
+}
+
+async function downloadPdf(){
+  const col = activeCollection();
+  const words = col.words;
+  if(!words.length){ toast(t("noWords")); return; }
+  const btn = $("btnDownloadPdf"); const orig = btn.innerHTML;
+  btn.disabled = true; btn.innerHTML = '<span class="spinner"></span>' + t("generating");
+  try{
+    const bytes = await generatePdf(words, makePdfOpts(false));
+    const blob = new Blob([bytes], { type: "application/pdf" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a"); a.href = url; a.download = "cards-"+Date.now()+".pdf"; a.click();
+    setTimeout(()=>URL.revokeObjectURL(url), 1000);
+    const now = new Date();
+    const dateStr = now.toLocaleDateString("ru-RU") + " " + now.toLocaleTimeString("ru-RU").slice(0,5);
+    const historyId = uid();
+    state.history.push({ id:historyId, collectionName:col.name, cardCount:words.length, grid:state.settings.gridRows+"×"+state.settings.gridCols, date:dateStr });
+    if(state.history.length > HISTORY_LIMIT){
+      state.history.slice(0, state.history.length - HISTORY_LIMIT).forEach(r => { delete historyPdfs[r.id]; });
+      state.history = state.history.slice(-HISTORY_LIMIT);
+    }
+    try{ historyPdfs[historyId] = bytesToBase64(bytes); saveHistoryPdfs(); }catch(e){ toast(t("historyTooBig")); }
+    saveState(); renderHistory(); toast(t("pdfReady"));
+  }catch(err){ console.error(err); toast(t("pdfError")+": "+err.message); }
+  finally{ btn.disabled = false; btn.innerHTML = orig; }
+}
+
+async function previewPdf(){
+  const col = activeCollection(); const words = col.words;
+  if(!words.length){ toast(t("noWords")); return; }
+  const btn = $("btnPreview"); const orig = btn.innerHTML;
+  btn.disabled = true; btn.innerHTML = '<span class="spinner"></span>' + t("generating");
+  try{
+    const bytes = await generatePdf(words, makePdfOpts(false));
+    const blob = new Blob([bytes], { type: "application/pdf" });
+    const url = URL.createObjectURL(blob);
+    previewArea.src = url; previewArea.style.display = "block";
+    previewArea.scrollIntoView({behavior:"smooth", block:"start"}); toast(t("previewReady"));
+  }catch(err){ console.error(err); toast(t("pdfError")+": "+err.message); }
+  finally{ btn.disabled = false; btn.innerHTML = orig; }
+}
+
+/* ===================== Events ===================== */
+$("btnRu").onclick=()=>{ state.lang="ru"; saveState(); applyLang(); renderAll(); };
+$("btnEn").onclick=()=>{ state.lang="en"; saveState(); applyLang(); renderAll(); };
+$("btnTheme").onclick=()=>{ state.theme = state.theme === "dark" ? "light" : "dark"; saveState(); applyTheme(); };
+$("btnMode").onclick=toggleMode;
+$("btnSettings").onclick=openSidebar;
+$("btnCloseSidebar").onclick=closeSidebar;
+sidebarOverlay.onclick=closeSidebar;
+$("btnClearAllData").onclick=clearAllData;
+
+// Feedback
+$("btnFeedback").onclick = openFeedback;
+$("btnCloseFeedback").onclick = closeFeedback;
+$("btnSendFeedback").onclick = sendFeedback;
+feedbackModal.onclick = (e)=>{ if(e.target === feedbackModal) closeFeedback(); };
+
+document.querySelectorAll(".color-dot").forEach(dot=>{
+  dot.onclick = ()=>{ state.color = dot.dataset.color; saveState(); applyColor(); };
+});
+collectionSelect.onchange=e=>{ state.activeCollectionId=e.target.value; saveState(); renderAll(); };
+inputKorean.addEventListener("keydown",e=>{ if(e.key==="Enter" && !e.shiftKey){ e.preventDefault(); inputTranslation.focus(); } });
+inputTranslation.addEventListener("keydown",e=>{ if(e.key==="Enter" && !e.shiftKey){ e.preventDefault(); inputTranscription.focus(); } });
+inputTranscription.addEventListener("keydown",e=>{ if(e.key==="Enter" && !e.shiftKey){ e.preventDefault(); addWord(); } });
+$("btnAdd").onclick=addWord;
+$("btnNewCollection").onclick=newCollection;
+$("btnRenameCollection").onclick=renameCollection;
+$("btnShareCode").onclick=shareCollection;
+$("btnPasteCode").onclick=pasteCode;
+$("btnDeleteCollection").onclick=deleteCollection;
+$("btnClearList").onclick=clearList;
+$("btnClearHistory").onclick=clearHistory;
+
+// Сетка и формат
+$("cardsPerPage").onchange=e=>{
+  const total = parseInt(e.target.value, 10);
+  state.settings.cardsPerPage = total;
+  const isLandscape = state.settings.pageOrientation === "landscape";
+  const ratio = isLandscape ? 1.41 : 0.71;
+  let bestR = 1, bestC = 1, minDiff = Infinity;
+  for(let r=1; r<=50; r++){
+    let c = Math.round(total / r);
+    if(c < 1 || c > 20) continue;
+    let diff = Math.abs((c / r) - ratio);
+    if(diff < minDiff){ minDiff = diff; bestR = r; bestC = c; }
+  }
+  state.settings.gridRows = bestR;
+  state.settings.gridCols = bestC;
+  $("gridRows").value = bestR;
+  $("gridCols").value = bestC;
+  saveState();
+};
+$("pageOrientation").onchange=e=>{ state.settings.pageOrientation=e.target.value; saveState(); };
+$("gridRows").onchange=e=>{ 
+  let v=parseInt(e.target.value,10); if(isNaN(v)||v<1)v=1; if(v>50)v=50; 
+  state.settings.gridRows=v; e.target.value=v; 
+  state.settings.cardsPerPage = state.settings.gridRows * state.settings.gridCols;
+  $("cardsPerPage").value = state.settings.cardsPerPage;
+  saveState(); 
+};
+$("gridCols").onchange=e=>{ 
+  let v=parseInt(e.target.value,10); if(isNaN(v)||v<1)v=1; if(v>20)v=20; 
+  state.settings.gridCols=v; e.target.value=v; 
+  state.settings.cardsPerPage = state.settings.gridRows * state.settings.gridCols;
+  $("cardsPerPage").value = state.settings.cardsPerPage;
+  saveState(); 
+};
+$("transcriptionPos").onchange=e=>{ state.settings.transcriptionPos=e.target.value; saveState(); renderWords(); };
+$("fontSize").onchange=e=>{ let v=parseInt(e.target.value,10); if(isNaN(v)||v<4)v=4; if(v>30)v=30; state.settings.fontSize=v; e.target.value=v; saveState(); };
+
+// Оформление текста для PDF
+$("wordColor").oninput=e=>{ state.settings.wordColor=e.target.value; saveState(); };
+$("transColor").oninput=e=>{ state.settings.transColor=e.target.value; saveState(); };
+$("fontWeight").onchange=e=>{ state.settings.fontWeight=e.target.value; saveState(); };
+
+$("btnDownloadPdf").onclick=downloadPdf;
+$("btnPreview").onclick=previewPdf;
+$("btnExport").onclick=exportData;
+$("btnImport").onclick=()=>$("importFile").click();
+$("importFile").onchange=e=>{ const f=e.target.files&&e.target.files[0]; if(f){ importData(f); e.target.value=""; } };
+
+// Импорт файлов
+$("btnImportFile").onclick=()=>fileInput.click();
+fileInput.onchange=e=>{ const f=e.target.files&&e.target.files[0]; if(f){ handleFileImport(f); e.target.value=""; } };
+
+// Help
+$("btnHelp").onclick = openHelp;
+btnCloseHelp.onclick = closeHelp;
+helpModal.onclick = (e)=>{ if(e.target === helpModal) closeHelp(); };
+$("closeHint").onclick = (e)=>{ e.stopPropagation(); markHelpSeen(); };
+
+// Modal code
+btnCopyCode.onclick = async ()=>{
+  try{
+    await navigator.clipboard.writeText(codeTextarea.value);
+    toast(t("copied"));
+  }catch(e){
+    codeTextarea.select();
+    document.execCommand("copy");
+    toast(t("copied"));
+  }
+};
+btnModalImport.onclick = importCode;
+btnCloseModal.onclick = ()=>{ codeModal.classList.remove("show"); };
+codeModal.onclick = (e)=>{ if(e.target === codeModal) codeModal.classList.remove("show"); };
+
+window.addEventListener("resize", ()=>{
+  if(state.mode === "auto") applyMode();
+});
+
+/* ===================== Init ===================== */
+loadState();
+applyTheme();
+applyColor();
+applyLang();
+applyMode();
+renderAll();
+updateCharCount(inputKorean, $("cntKorean"));
+updateCharCount(inputTranslation, $("cntTranslation"));
+setTimeout(showHelpHintFirstTime, 500);
+</script>
+</body>
+</html>
